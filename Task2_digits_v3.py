@@ -1,19 +1,8 @@
 import re
 from typing import Callable, Iterator
 
-# Number: optional sign, integer part, optional fractional part after a period
-# Edge restrictions: no non-whitespace characters before/after (i.e., space or line boundary)
+_NUMBER_RE = re.compile(r'(?<=\s)[+-]?\d+(?:\.\d+)?(?=\s)') #(?<=\s), (?=\s) — перевірка вперед та назад на " "
 
-#Regulator for searching for valid numbers in the text:
-
-#(?<!\S) — negative lookback: no non-whitespace character on the left ⇒ either a space or the beginning of a line on the left.
-#[+-]? — optional + or - sign
-#\d+ — one or more digits (integer part)
-#(?:\.\d+)? — optional non-capturing group: a period and one or more digits (fractional part). Non-capturing (?:) — to avoid creating numbered groups; we will take the entire match.
-#(?!\S) — negative lookahead: no non-whitespace character to the right ⇒ either a space or the end of the line to the right.
-
-
-_NUMBER_RE = re.compile(r'(?<!\S)[+-]?\d+(?:\.\d+)?(?!\S)')
 
 def generator_numbers(text: str) -> Iterator[float]:
     """find all numbers in the text and return them one by one as floats."""
