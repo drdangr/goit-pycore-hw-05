@@ -1,40 +1,32 @@
 import re
 from typing import Callable, Iterator
 
-# Число: опционально знак, целая часть, опционально - дробная часть через точку
-# Ограничение по краям: перед/после нет непробельных символов (то есть пробел или граница строки)
+# Number: optional sign, integer part, optional fractional part after a period
+# Edge restrictions: no non-whitespace characters before/after (i.e., space or line boundary)
 
-#Регуляторка для поиска действительных чисел в тексте честно сгенерирована (моих мозгов не хватило:) но я стараюсь разбираться в ней:
+#Regulator for searching for valid numbers in the text:
 
-#(?<!\S) — негативный просмотр назад: слева нет непробельного символа ⇒ слева либо пробел, либо начало строки.
-#[+-]? — необязательный знак + или -
-#\d+ — одна или более цифр (целая часть)
-#(?:\.\d+)? — необязательная некопирующая группа: точка и одна/более цифр (дробная часть). Некопирующая (?:) — чтобы не плодить нумерованные группы; мы будем брать всё совпадение целиком.
-#(?!\S) — негативный просмотр вперёд: справа нет непробельного символа ⇒ справа либо пробел, либо конец строки.
+#(?<!\S) — negative lookback: no non-whitespace character on the left ⇒ either a space or the beginning of a line on the left.
+#[+-]? — optional + or - sign
+#\d+ — one or more digits (integer part)
+#(?:\.\d+)? — optional non-capturing group: a period and one or more digits (fractional part). Non-capturing (?:) — to avoid creating numbered groups; we will take the entire match.
+#(?!\S) — negative lookahead: no non-whitespace character to the right ⇒ either a space or the end of the line to the right.
+
 
 _NUMBER_RE = re.compile(r'(?<!\S)[+-]?\d+(?:\.\d+)?(?!\S)')
 
 def generator_numbers(text: str) -> Iterator[float]:
-    """находим в тексте все числа и возвращаем их по одному в виде float."""
+    """find all numbers in the text and return them one by one as floats."""
     for m in _NUMBER_RE.finditer(text):
-        yield float(m.group()) # генератор в генераторе, ну круто же :)
+        yield float(m.group()) 
 
 def sum_profit(text: str, func: Callable) -> float:
-    """Суммируем все числа, возвращённые генератором func(text)."""
-
-    """..ну и чтобы было прям красиво, вместо понятного всем цикла с аккумулятором: 
-    summ = 0.0
-    for number in func(text):
-        summ += number
-    используем встроенную функцию sum(): которая принимает генератор и _сама_ итерируется по нему, суммируя значения.
-    генератор→ генератор→ потребитель генерации.. жжжжесть. черная магия питон, я этого никогда до конца не пойму, надо просто как-то запомнить :D  
-    """
+    """We sum up all the numbers found in the text using the transferred generator function."""
     return sum(func(text))
 
 
 # рабочий код
-if __name__ == "__main__": # для чистоты выполним только если файл запущен как скрипт из командной строки
-    text = ("Общий доход работника состоит из нескольких частей: 1000.01 как основной доход, "
-            "дополненный дополнительными поступлениями 27.45 и 324.00 долларов.")
+if __name__ == "__main__": # for testing
+    text = ("Загальний дохід працівника складається з декількох частин: 1000.01 як основний дохід, доповнений додатковими надходженнями 27.45 і 324.00 доларів.")
     total_income = sum_profit(text, generator_numbers)
-    print(f"Общий доход: {total_income}")  # => Общий доход: 1351.46
+    print(f"Загальний дохід: {total_income}")  # => 1351.46

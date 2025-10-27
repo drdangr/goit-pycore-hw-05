@@ -1,15 +1,15 @@
 def caching_fibonacci():
-    # пустой словарь для кэша
+    # inside function cache
     cache = {}
     
     def fibonacci(n):
-        # Базовые случаи
+        # base cases
         if n <= 0:
             return 0
         if n == 1:
             return 1
         
-        # Если уже в кэше - возвращаем его
+        # if already in cache, return it
         if n in cache:
             
             # debug print
@@ -17,7 +17,7 @@ def caching_fibonacci():
             
             return cache[n]
         
-        # рекурсия и кэш
+        # recursive calculation with caching
         cache[n] = fibonacci(n - 1) + fibonacci(n - 2)
         
         #debug print
@@ -25,13 +25,13 @@ def caching_fibonacci():
         
         return cache[n]
     
-    # Возвращаем внутреннюю функцию
+    # return the inner function
     return fibonacci
 
-# Пример использования:
+# example usage
 fib = caching_fibonacci()
 print(fib(10))  # 55
 print(fib(15))  # 610
 
-# Проверка кэша
-print(fib(10))  # Должно извлечь из кэша, если раскоментировать debug prints в fibonacci, будет видно
+# check caching by calling again
+print(fib(10))  # may retrieve from cache
