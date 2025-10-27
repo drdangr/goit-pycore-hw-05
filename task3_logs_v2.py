@@ -116,17 +116,16 @@ def display_log_counts(counts: Dict[str, int]) -> None:
 def make_argparser() -> argparse.ArgumentParser:
     '''
     creates and returns the argument parser.
+    using _argparse_ module. 
     '''
-    
+    # create parser with description for help
     p = argparse.ArgumentParser(
         description="Аналіз лог-файлів: статистика за рівнями та фільтрація за рівнем."
     )
+    # adding first agument: file path
     p.add_argument("file", help="Шлях до файлу логів (UTF-8).")
-    p.add_argument(
-        "level",
-        nargs="?",
-        help="(необов'язково) рівень логування для детального виводу: info/error/debug/warning/…",
-    )
+    # optional second argument: level
+    p.add_argument("level", nargs="?", help="(необов'язково) рівень логування для детального виводу: info/error/debug/warning/…",)
     return p
 
 
@@ -135,31 +134,33 @@ def main() -> None:
     args = parser.parse_args()
 
     file_path: str = args.file
-    user_level: str | None = args.level
+    user_level: str | None = args.level # optional!, may be None
 
-    # Проверки существования/типа файла
+    # Check if file exists and is a file
     if not os.path.exists(file_path):
-        print(f"❌ Файл не знайдено: {file_path}")
+        print(f"Файл не знайдено: {file_path}")
         return
     if not os.path.isfile(file_path):
-        print(f"❌ Це не файл: {file_path}")
+        print(f"Це не файл: {file_path}")
         return
 
-    # Загрузка логов с обработкой ошибок чтения/кодировки
+    # Load logs from file and handle read errors
     try:
         logs = load_logs(file_path)
     except (OSError, UnicodeError) as e:
-        print(f"❌ Помилка читання файлу: {e}")
+        print(f"Помилка читання файлу: {e}")
         return
 
-    # Подсчёт и вывод таблицы
+    # Count and display log levels
     counts = count_logs_by_level(logs)
     display_log_counts(counts)
 
-    # Детализация по уровню (если запрошено)
+    # If user specified a level, filter and display those logs
     if user_level:
         level_logs = filter_logs_by_level(logs, user_level)
         print(f"\nДеталі логів для рівня '{user_level.upper()}':")
+
+        # display filtered logs or message if none
         if not level_logs:
             print("(немає записів)")
         else:
