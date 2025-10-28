@@ -1,7 +1,7 @@
 import re
 from typing import Callable, Iterator
 
-_NUMBER_RE = re.compile(r'(?<=\s)[+-]?\d+(?:\.\d+)?(?=\s)') #(?<=\s), (?=\s) — перевірка вперед та назад на " "
+_NUMBER_RE = re.compile(r'(?<= )[+-]?\d+(?:\.\d+)?(?= )')  # (?<= ), (?= ) — перевірка вперед та назад на " "
 
 
 def generator_numbers(text: str) -> Iterator[float]:
