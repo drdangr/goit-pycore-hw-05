@@ -2,28 +2,23 @@ from typing import Callable
 import functools
 
 
-# Декоратор єдиного оброблення помилок
 def input_error(func: Callable[..., str]) -> Callable[..., str]:
     """
-    Обгортає хендлер команди та перехоплює типові помилки введення користувача,
-    повертаючи дружні повідомлення замість падіння програми.
+    Обгортає хендлер команди та перехоплює типові помилки введення
+    користувача, повертаючи дружні повідомлення замість падіння програми.
     """
-    @functools.wraps(func) # зберігає метадані оригінальної функції (зараз не треба, але на майбутьне)
+    @functools.wraps(func)
     def inner(*args, **kwargs) -> str:
         try:
-            # Виклик оригінальної функції-хендлера
             return func(*args, **kwargs)
 
-        # Коли контакт не знайдено (ім'я передається в KeyError)
         except KeyError as e:
             name = (e.args[0] if e.args else "").strip() or "<?>"
             return f"Contact '{name}' not found."
 
-        # Коли бракує або неправильні аргументи 
         except IndexError:
             return "Enter the argument for the command"
 
-        # Загальний випадок для некоректних значень, якщо десь з'являться ValueError
         except ValueError as e:
             msg = (str(e).strip() or "Invalid arguments.")
             return msg
@@ -31,8 +26,6 @@ def input_error(func: Callable[..., str]) -> Callable[..., str]:
     return inner
 
 
-
-# Розбір рядка вводу 
 def parse_input(user_input: str) -> tuple[str, ...]:
     """
     Повертає кортеж: (команда, *аргументи).
@@ -45,8 +38,6 @@ def parse_input(user_input: str) -> tuple[str, ...]:
     return cmd.lower(), *args
 
 
-
-# Хелп (викликається окремою командою або з головного циклу)
 def help_command() -> str:
     """
     Довідка по доступним командам бота.
@@ -63,16 +54,12 @@ def help_command() -> str:
     )
 
 
-
-# Хендлери команд 
 @input_error
 def add_contact(args: list[str], contacts: dict[str, str]) -> str:
     """
     add <name> <phone> — додати новий контакт.
-    Очікуємо рівно 2 аргументи. Інакше піднімаємо IndexError (щоб збігалося з прикладом).
+    ValueError виникне автоматично, якщо args не містить рівно 2 елементи.
     """
-    if len(args) != 2:
-        raise IndexError # якщо бракуе аргументів
     name, phone = args
     contacts[name] = phone
     return "Contact added."
@@ -82,13 +69,11 @@ def add_contact(args: list[str], contacts: dict[str, str]) -> str:
 def change_contact(args: list[str], contacts: dict[str, str]) -> str:
     """
     change <name> <new_phone> — змінити номер існуючого контакту.
-    Так само очікуємо 2 аргументи. Якщо контакту немає — KeyError(name).
+    ValueError виникне при неправильній кількості аргументів.
+    KeyError виникне при спробі отримати неіснуючий контакт.
     """
-    if len(args) != 2:
-        raise IndexError
     name, new_phone = args
-    if name not in contacts:
-        raise KeyError(name) # Ім'я контакту не знайдено, декоратор поверне "Contact '<name>' not found."
+    contacts[name]  # Перевірка існування через доступ до ключа
     contacts[name] = new_phone
     return "Contact updated."
 
@@ -97,13 +82,10 @@ def change_contact(args: list[str], contacts: dict[str, str]) -> str:
 def show_phone(args: list[str], contacts: dict[str, str]) -> str:
     """
     phone <name> — показати номер телефону контакту.
-    Без аргументів → IndexError (для уніфікованого повідомлення).
+    IndexError виникне при спробі отримати args[0] з порожнього списку.
+    KeyError виникне при доступі до неіснуючого ключа.
     """
-    if not args:
-        raise IndexError
     name = args[0]
-    if name not in contacts:
-        raise KeyError(name)
     return contacts[name]
 
 
@@ -113,14 +95,13 @@ def show_all(contacts: dict[str, str]) -> str:
     all — вивести всі контакти у форматі 'Name: Phone' по одному в рядку.
     Порожній словник → повідомлення 'No contacts.' (це не помилка).
     """
-    return "\n".join(f"{n}: {p}" for n, p in contacts.items()) or "No contacts."
+    output = "\n".join(f"{n}: {p}" for n, p in contacts.items())
+    return output or "No contacts."
 
 
-
-# Головний цикл бота
 def main():
     """
-    Основний цикл 
+    Основний цикл
     """
     contacts: dict[str, str] = {}
     print("Welcome to the assistant bot!")
@@ -150,13 +131,10 @@ def main():
             print(help_command())
 
         elif command == "":
-            # Порожній ввід: підказка користувачу
             print("Enter a command or type 'help'.")
 
         else:
-            # Невідома команда: повідомлення + (за бажанням) help
             print(f"Unknown command: '{command}'")
-            # Якщо потрібно як у прикладі без help — закоментуйте наступний рядок:
             print(help_command())
 
 
