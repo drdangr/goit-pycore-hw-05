@@ -8,7 +8,8 @@ def input_error(func: Callable[..., str]) -> Callable[..., str]:
     Обгортає хендлер команди та перехоплює типові помилки введення користувача,
     повертаючи дружні повідомлення замість падіння програми.
     """
-    @functools.wraps(func) # зберігає метадані оригінальної функції (зараз не треба, але на майбутьне)
+    # wraps зберігає метадані оригінальної функції (корисно на майбутнє)
+    @functools.wraps(func)
     def inner(*args, **kwargs) -> str:
         try:
             # Виклик оригінальної функції-хендлера
@@ -19,7 +20,7 @@ def input_error(func: Callable[..., str]) -> Callable[..., str]:
             name = (e.args[0] if e.args else "").strip() or "<?>"
             return f"Contact '{name}' not found."
 
-        # Коли бракує або неправильні аргументи 
+        # Коли бракує або неправильні аргументи
         except IndexError:
             return "Enter the argument for the command"
 
@@ -32,7 +33,7 @@ def input_error(func: Callable[..., str]) -> Callable[..., str]:
 
 
 
-# Розбір рядка вводу 
+# Розбір рядка вводу
 def parse_input(user_input: str) -> tuple[str, ...]:
     """
     Повертає кортеж: (команда, *аргументи).
@@ -64,15 +65,13 @@ def help_command() -> str:
 
 
 
-# Хендлери команд 
+# Хендлери команд
 @input_error
 def add_contact(args: list[str], contacts: dict[str, str]) -> str:
     """
     add <name> <phone> — додати новий контакт.
-    Очікуємо рівно 2 аргументи. Інакше піднімаємо IndexError (щоб збігалося з прикладом).
+    Очікуємо рівно 2 аргументи.
     """
-    if len(args) != 2:
-        raise IndexError # якщо бракуе аргументів
     name, phone = args
     contacts[name] = phone
     return "Contact added."
@@ -84,11 +83,8 @@ def change_contact(args: list[str], contacts: dict[str, str]) -> str:
     change <name> <new_phone> — змінити номер існуючого контакту.
     Так само очікуємо 2 аргументи. Якщо контакту немає — KeyError(name).
     """
-    if len(args) != 2:
-        raise IndexError
     name, new_phone = args
-    if name not in contacts:
-        raise KeyError(name) # Ім'я контакту не знайдено, декоратор поверне "Contact '<name>' not found."
+    _ = contacts[name]  # перевіряємо наявність контакту, KeyError підійме декоратор
     contacts[name] = new_phone
     return "Contact updated."
 
@@ -99,11 +95,7 @@ def show_phone(args: list[str], contacts: dict[str, str]) -> str:
     phone <name> — показати номер телефону контакту.
     Без аргументів → IndexError (для уніфікованого повідомлення).
     """
-    if not args:
-        raise IndexError
     name = args[0]
-    if name not in contacts:
-        raise KeyError(name)
     return contacts[name]
 
 
@@ -113,14 +105,15 @@ def show_all(contacts: dict[str, str]) -> str:
     all — вивести всі контакти у форматі 'Name: Phone' по одному в рядку.
     Порожній словник → повідомлення 'No contacts.' (це не помилка).
     """
-    return "\n".join(f"{n}: {p}" for n, p in contacts.items()) or "No contacts."
+    contacts_view = "\n".join(f"{n}: {p}" for n, p in contacts.items())
+    return contacts_view or "No contacts."
 
 
 
 # Головний цикл бота
 def main():
     """
-    Основний цикл 
+    Основний цикл
     """
     contacts: dict[str, str] = {}
     print("Welcome to the assistant bot!")
@@ -156,7 +149,7 @@ def main():
         else:
             # Невідома команда: повідомлення + (за бажанням) help
             print(f"Unknown command: '{command}'")
-            # Якщо потрібно як у прикладі без help — закоментуйте наступний рядок:
+            # За потреби поведінку можна змінити, закоментувавши наступний рядок
             print(help_command())
 
 
